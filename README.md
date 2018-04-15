@@ -8,17 +8,17 @@ A minimal example of what the state machine definition looks like:
 
 ```
 start{
-	'a'..'z' => identifier_state
-	'A'..'Z' => identifier_state
-	'0'..'9' => number_state
+    'a'..'z' => identifier_state
+    'A'..'Z' => identifier_state
+    '0'..'9' => number_state
 }
 
 identifier_state{
-	'a'..'z' => identifier_state
-	'A'..'Z' => identifier_state
-	'0'..'9' => identifier_state
-	'_' => identifier_state
-	_ => return IDENTIFIER
+    'a'..'z' => identifier_state
+    'A'..'Z' => identifier_state
+    '0'..'9' => identifier_state
+    '_' => identifier_state
+    _ => return IDENTIFIER
 }
 
 number_state{
