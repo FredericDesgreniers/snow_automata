@@ -17,7 +17,8 @@ pub enum TokenKind {
     Range,
     SemiColumn,
     Integer(i32),
-    Scope(ScopeType)
+    Scope(ScopeType),
+    UnderScore
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]

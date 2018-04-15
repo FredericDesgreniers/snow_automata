@@ -243,6 +243,10 @@ impl<'input> AutomataParser<'input> {
             '}' => {
                 return_token!(Scope(Close));
             },
+            //UnderScore
+            '_' => {
+                return_token!(UnderScore);
+            }
             // Unknown
             chr => {
                 parse_err!(format!("No pattern for {} for ", chr));

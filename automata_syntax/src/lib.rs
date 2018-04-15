@@ -65,7 +65,25 @@ impl<'input> SyntaxParser<'input> {
                             return current_state_definition;
                             break 'statement_loop;
                         },
+                        TokenKind::UnderScore => {
+                            let arrow_token = self.parser.get_next_token();
 
+                            // The rest of the statement is `=> destination`
+                            if let Some(arrow_token) = arrow_token {
+                                if let Token { kind: TokenKind::Arrow, .. } = arrow_token {
+                                    let destination = self.parser.get_next_token();
+                                    if let Some(Token { kind: TokenKind::Identifier(destination), .. }) = destination {
+                                        current_state_definition.push_statement(Statement::new(destination, StatementKind::Default));
+                                    } else {
+                                        syntax_err!(self, "Expected destination identifier after", arrow_token);
+                                    }
+                                } else {
+                                    syntax_err!(self, "Expected arrow instead of ", arrow_token);
+                                }
+                            } else {
+                                syntax_err!(self, "Expected arrow after", token);
+                            }
+                        }
                         // it's currently assumed every statement starts with a char literal since it's the only thing supported
                         TokenKind::Char(chr) => {
                             let next_token = self.parser.get_next_token();

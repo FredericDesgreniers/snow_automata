@@ -23,5 +23,6 @@ impl Statement {
 #[derive(Debug)]
 pub enum StatementKind {
 	Literal(char),
-	Range(char, char)
+	Range(char, char),
+	Default
 }
