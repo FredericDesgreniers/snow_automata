@@ -31,7 +31,12 @@ pub struct InternedString {
 
 impl fmt::Debug for InternedString {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", intern_get_str(*self))
+        if let Some(string) = intern_get_str(*self) {
+            write!(f, "{:?}", string)
+        } else {
+            write!(f, "Invalid intern string {:?}", *self)
+        }
+
     }
 }
 
