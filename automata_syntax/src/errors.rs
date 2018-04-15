@@ -8,13 +8,13 @@ macro_rules! syntax_err {
                         token_start - 5
                     } else {
                         0
-                    }
+                    };
 
                     let source_end = if token_end < $syntax_parser.input.len() - 5 {
                         token_end + 5
                     } else {
                         $syntax_parser.input.len()
-                    }
+                    };
 
                     let err_source_before = $syntax_parser.input[source_start..token_start].trim();
                     let err_source_after = $syntax_parser.input[token_end..source_end].trim();

@@ -6,3 +6,4 @@ authors = ["Frederic Desgreniers <fredericdesgreniers@gmail.com>"]
 [dependencies]
 automata = {path = "../automata"}
 colored = "1.6"
+automata_core = {path="../automata_core"}

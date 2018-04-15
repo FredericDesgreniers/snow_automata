@@ -1,4 +1,6 @@
-#[derive(Debug, Clone)]
+use automata_core::string_interning::*;
+
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Token {
     pub kind: TokenKind,
     pub column_location: (usize, usize),
@@ -6,9 +8,9 @@ pub struct Token {
     pub index_location: (usize, usize)
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TokenKind {
-    Identifier(String),
+    Identifier(InternedString),
     Arrow,
     Column,
     Char(char),
@@ -18,7 +20,7 @@ pub enum TokenKind {
     Scope(ScopeType)
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ScopeType {
     Open,
     Close

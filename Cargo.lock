@@ -3,10 +3,18 @@ name = "automata"
 version = "0.1.0"
 
 [[package]]
+name = "automata_core"
+version = "0.1.0"
+dependencies = [
+ "lazy_static 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "automata_parser"
 version = "0.1.0"
 dependencies = [
  "automata 0.1.0",
+ "automata_core 0.1.0",
  "colored 1.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -14,6 +22,7 @@ dependencies = [
 name = "automata_syntax"
 version = "0.1.0"
 dependencies = [
+ "automata_core 0.1.0",
  "automata_parser 0.1.0",
  "colored 1.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -32,10 +41,16 @@ version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "lazy_static"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "snow_automata"
 version = "0.1.0"
 dependencies = [
  "automata 0.1.0",
+ "automata_core 0.1.0",
  "automata_parser 0.1.0",
  "automata_syntax 0.1.0",
 ]
@@ -43,3 +58,4 @@ dependencies = [
 [metadata]
 "checksum colored 1.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b0aa3473e85a3161b59845d6096b289bb577874cafeaf75ea1b1beaa6572c7fc"
 "checksum lazy_static 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)" = "76f033c7ad61445c5b347c7382dd1237847eb1bce590fe50365dcb33d546be73"
+"checksum lazy_static 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c8f31047daa365f19be14b47c29df4f7c3b581832407daabe6ae77397619237d"

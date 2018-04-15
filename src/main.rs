@@ -2,7 +2,6 @@ extern crate automata;
 extern crate automata_parser;
 extern crate automata_syntax;
 
-use automata_parser::AutomataParser;
 use automata_syntax::SyntaxParser;
 use std::fs::File;
 use std::io::prelude::*;
@@ -19,5 +18,7 @@ fn main() {
     let _ = automata_file.read_to_string(&mut automata_text).expect("Could not read file...");
 
     let mut parser = SyntaxParser::new(&automata_text);
-    parser.parse();
+    let state_definitions = parser.parse();
+
+    println!("{:#?}", state_definitions);
 }

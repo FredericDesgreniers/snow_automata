@@ -1,24 +1,30 @@
 extern crate automata;
 extern crate colored;
 
+extern crate automata_core;
+
 pub mod tokens;
 
 use tokens::{TokenKind::*, ScopeType::*, Token};
 use automata::Automata;
 use std::str::Chars;
 use colored::*;
+use std::collections::VecDeque;
+use automata_core::string_interning::*;
 
+/// Parses input into a series of tokens
 #[derive(Debug)]
 pub struct AutomataParser<'input> {
     raw: &'input str,
     input: Chars<'input>,
-    buffered_input: Option<char>,
+    buffered_input: VecDeque <char>,
     line: usize,
     column: usize,
     index: usize
 }
 
 impl<'input> AutomataParser<'input> {
+    /// Create a new AutomataParser given some input
     pub fn new(input: &'input str) -> Self {
         let input_chars = input.chars();
 
@@ -28,11 +34,12 @@ impl<'input> AutomataParser<'input> {
             line: 0,
             column: 0,
             index: 0,
-            buffered_input: None
+            buffered_input: VecDeque ::new()
         }
     }
 
-    pub fn check(&mut self) -> Automata{
+    /// Goes through every token and prints it. Can be used to check input validity
+    pub fn check(&mut self) {
 
         let automata_result = Automata::new();
 
@@ -41,16 +48,16 @@ impl<'input> AutomataParser<'input> {
         }
 
         println!("End state: \n {:#?}", self);
-
-        automata_result
     }
 
+    /// Get the next character in the input stream
+    /// This supports buffering for look ahead and takes care of whitespaces / new lines
     fn get_next_char(&mut self) -> Option<char> {
 
-        if let Some(buffered_chr) = self.buffered_input {
-            self.buffered_input = None;
+        if let Some(buffered_chr) = self.buffered_input.pop_front() {
             return Some(buffered_chr);
         }
+
 
         'input_loop: while let Some(chr) = self.input.next(){
             self.column += 1;
@@ -60,17 +67,18 @@ impl<'input> AutomataParser<'input> {
                 '\n' => {
                     self.line += 1;
                     self.column = 0;
-                    self.buffered_input = Some(' ');
+                    self.buffered_input.push_back(' ');
                     continue 'input_loop;
                 },
                 _ if chr.is_whitespace() => {
                     self.column += 1;
-                    self.buffered_input = Some(' ');
+                    self.buffered_input.push_back(' ');
                     continue 'input_loop;
                 },
                 _ => {
-                    if let Some(buffered_chr) = self.buffered_input {
-                        self.buffered_input = Some(chr);
+
+                    if let Some(buffered_chr) = self.buffered_input.pop_front() {
+                        self.buffered_input.push_back(chr);
                         return Some(buffered_chr);
                     }
 
@@ -82,18 +90,22 @@ impl<'input> AutomataParser<'input> {
         return None;
     }
 
+    /// Get the column location from start to current location
     fn get_column_location_from(&self, start: usize) -> (usize, usize) {
         (start, self.column)
     }
 
+    /// Get the line location from start to current location
     fn get_line_location_from(&self, start: usize) -> (usize, usize) {
         (start, self.line)
     }
 
+    /// Get the index location from start to current location
     fn get_index_location_from(&self, start: usize) -> (usize, usize) {
         (start, self.index)
     }
 
+    /// Get the next token from the input
     pub fn get_next_token(&mut self) -> Option<Token> {
 
         let mut chr = self.get_next_char()?;
@@ -106,16 +118,19 @@ impl<'input> AutomataParser<'input> {
         let line_start = self.line;
         let index_start = self.index-1;
 
+        /// A macro that returns the token, taking care of debug info
         macro_rules! return_token {
             ($kind: expr) => {
                 return Some(Token::new($kind,
                 self.get_column_location_from(column_start),
                 self.get_line_location_from(line_start),
-                self.get_index_location_from(index_start)))
+                self.get_index_location_from(index_start)));
             };
         }
 
+        /// A macro to output parse errors
         macro_rules! parse_err {
+            //TODO: Make formatting on par with the syntax errors
             ($err: expr) => {
                 let error_source = &self.raw[index_start..self.index];
 
@@ -142,8 +157,8 @@ impl<'input> AutomataParser<'input> {
                             identifier.push(chr);
                         },
                         chr => {
-                            self.buffered_input = Some(chr);
-                            return_token!(Identifier(identifier));
+                            self.buffered_input.push_front(chr);
+                            return_token!(Identifier(intern(identifier)));
                         }
                     }
                 }
@@ -158,7 +173,7 @@ impl<'input> AutomataParser<'input> {
                             number += chr.to_digit(10).unwrap() as i32;
                         },
                         chr => {
-                            self.buffered_input = Some(chr);
+                            self.buffered_input.push_front(chr);
                             parse_err!("Digit cannot contain letter");
                         }
                     }
@@ -201,9 +216,11 @@ impl<'input> AutomataParser<'input> {
                     }
                 }
             },
+            // Semi column
             ';' => {
                 return_token!(SemiColumn);
             },
+            // Character literal
             '\'' => {
                 if let Some(middle_char) = self.get_next_char() {
                     if let Some(chr) = self.get_next_char() {
@@ -219,27 +236,19 @@ impl<'input> AutomataParser<'input> {
                     }
                 }
             },
+            // Scopes
             '{' => {
                 return_token!(Scope(Open));
             },
             '}' => {
                 return_token!(Scope(Close));
-            }
+            },
+            // Unknown
             chr => {
                 parse_err!(format!("No pattern for {} for ", chr));
             }
         }
 
         None
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test_token_sequence() {
-        let input_text = "var1: \
-        'a'..'b' => \
-        ";
     }
 }

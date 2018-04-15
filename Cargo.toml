@@ -9,3 +9,4 @@ authors = ["Frederic Desgreniers <fredericdesgreniers@gmail.com>"]
 automata = {path = "automata"}
 automata_parser = {path = "automata_parser"}
 automata_syntax = {path = "automata_syntax"}
+automata_core = {path="automata_core"}

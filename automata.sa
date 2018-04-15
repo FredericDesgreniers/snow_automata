@@ -1,21 +1,18 @@
 start{
-	'a'..'z' => identifier;
-	'0'..'9' => number;
-
-	end
+	'a'..'z' => identifier_state
+	'0'..'9' => number_state
 }
 
-identifier{
-	'a'..'z' => identifier;
-	'0'..'9' => identifier;
-	'_' => identifier;
-	end
+identifier_state{
+	'a'..'z' => identifier_state
+	'0'..'9' => identifier_state
+	'_' => identifier_state
 }
 
-number{
-
+number_state{
+    '0'..'9' => number_state
 }
 
-end {
+end{
 
 }
