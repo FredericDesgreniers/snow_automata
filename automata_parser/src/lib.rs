@@ -6,9 +6,7 @@ extern crate automata_core;
 pub mod tokens;
 
 use tokens::{ScopeType::*, Token, TokenDebugInfo, TokenKind::*};
-use automata::Automata;
 use std::str::Chars;
-use colored::*;
 use std::collections::VecDeque;
 use automata_core::string_interning::*;
 
@@ -40,8 +38,6 @@ impl<'input> AutomataParser<'input> {
 
     /// Goes through every token and prints it. Can be used to check input validity
     pub fn check(&mut self) {
-        let automata_result = Automata::new();
-
         while let Some(token) = self.get_next_token() {
             println!("{:?}", token);
         }
