@@ -50,7 +50,7 @@ impl<'input> SyntaxParser<'input> {
                     state_definitions.push(state_definition);
                 }
                 _ => {
-                    syntax_err!(self, "Did not expect at start of definition", token);
+                    syntax_err(self, "Did not expect at start of definition", &token);
                 }
             }
         }
@@ -90,17 +90,17 @@ impl<'input> SyntaxParser<'input> {
                                             StatementMatchKind::Default,
                                         ));
                                     } else {
-                                        syntax_err!(
+                                        syntax_err(
                                             self,
                                             "Could find valid destination after ",
-                                            arrow_token
+                                            &arrow_token,
                                         );
                                     }
                                 } else {
-                                    syntax_err!(self, "Expected arrow instead of ", arrow_token);
+                                    syntax_err(self, "Expected arrow instead of ", &arrow_token);
                                 }
                             } else {
-                                syntax_err!(self, "Expected arrow after", token);
+                                syntax_err(self, "Expected arrow after", &token);
                             }
                         }
                         // it's currently assumed every statement starts with a char literal since it's the only thing supported
@@ -117,21 +117,22 @@ impl<'input> SyntaxParser<'input> {
                                     TokenKind::Range => {
                                         if let Some(token) = self.parser.get_next_token() {
                                             if let Token {
-                                                kind: TokenKind::Char(end_chr),
+                                                kind: TokenKind::Char(to_chr),
                                                 ..
                                             } = token
                                             {
                                                 // A range token was present between two char literals, so we change the kind to a range
-                                                statement_kind =
-                                                    StatementMatchKind::Range(chr, end_chr);
+                                                statement_kind = StatementMatchKind::Range(
+                                                    CharRange::new(chr, to_chr),
+                                                );
                                             } else {
-                                                syntax_err!(self, "Invalid range close", token);
+                                                syntax_err(self, "Invalid range close", &token);
                                             }
                                         } else {
-                                            syntax_err!(
+                                            syntax_err(
                                                 self,
                                                 "Expected range close after",
-                                                next_token
+                                                &next_token,
                                             );
                                         }
                                     }
@@ -159,40 +160,40 @@ impl<'input> SyntaxParser<'input> {
                                                 Statement::new(destination, statement_kind),
                                             );
                                         } else {
-                                            syntax_err!(
+                                            syntax_err(
                                                 self,
                                                 "Could find valid destination after ",
-                                                arrow_token
+                                                &arrow_token,
                                             );
                                         }
                                     } else {
-                                        syntax_err!(
+                                        syntax_err(
                                             self,
                                             "Expected arrow instead of ",
-                                            arrow_token
+                                            &arrow_token,
                                         );
                                     }
                                 } else {
-                                    syntax_err!(self, "Expected arrow after", next_token);
+                                    syntax_err(self, "Expected arrow after", &next_token);
                                 }
                             } else {
-                                syntax_err!(self, "Expected some token after", token);
+                                syntax_err(self, "Expected some token after", &token);
                             }
                         }
                         _ => {
-                            syntax_err!(self, "Statement cannot start with", token);
+                            syntax_err(self, "Statement cannot start with", &token);
                         }
                     }
                 }
             } else {
-                syntax_err!(
+                syntax_err(
                     self,
                     format!("Expected an open token after {:?}", token),
-                    open_token
+                    &open_token,
                 );
             }
         } else {
-            syntax_err!(self, "Expected an open token after", token);
+            syntax_err(self, "Expected an open token after", &token);
         }
 
         return current_state_definition;
@@ -214,23 +215,23 @@ impl<'input> SyntaxParser<'input> {
                         {
                             return Some(Destination::Return(return_identifier));
                         } else {
-                            syntax_err!(
+                            syntax_err(
                                 self,
                                 "Expected identifier after return",
-                                return_identifier_token
+                                &return_identifier_token,
                             );
                         }
                     } else {
-                        syntax_err!(self, "Expected identifier after return", destination_token);
+                        syntax_err(self, "Expected identifier after return", &destination_token);
                     }
                 } else {
                     return Some(Destination::State(destination));
                 }
             } else {
-                syntax_err!(self, "Expected destination identifier", destination_token);
+                syntax_err(self, "Expected destination identifier", &destination_token);
             }
         } else {
-            syntax_err!(self, "Expected destination identifier after", token);
+            syntax_err(self, "Expected destination identifier after", &token);
         }
 
         None
