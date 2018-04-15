@@ -82,7 +82,7 @@ impl<'input> SyntaxParser<'input> {
                                     {
                                         current_state_definition.push_statement(Statement::new(
                                             destination,
-                                            StatementKind::Default,
+                                            StatementMatchKind::Default,
                                         ));
                                     } else {
                                         syntax_err!(
@@ -105,7 +105,7 @@ impl<'input> SyntaxParser<'input> {
                             let mut arrow_token = None;
 
                             // It's assumed this is a literal but if a range is present, it can be changed later
-                            let mut statement_kind = StatementKind::Literal(chr);
+                            let mut statement_kind = StatementMatchKind::Literal(chr);
 
                             if let Some(next_token) = next_token {
                                 match next_token.kind {
@@ -117,7 +117,7 @@ impl<'input> SyntaxParser<'input> {
                                             } = token
                                             {
                                                 // A range token was present between two char literals, so we change the kind to a range
-                                                statement_kind = StatementKind::Range(chr, end_chr);
+                                                statement_kind = StatementMatchKind::Range(chr, end_chr);
                                             } else {
                                                 syntax_err!(self, "Invalid range close", token);
                                             }

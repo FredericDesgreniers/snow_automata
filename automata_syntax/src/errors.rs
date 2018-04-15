@@ -21,14 +21,9 @@ macro_rules! syntax_err {
         let err_source = $syntax_parser.input[token_start..token_end].trim();
 
         eprintln!("{}", $err.bright_red().underline());
+        eprintln!("Token:\t{}", format!("{:?}", $token.kind).bright_cyan());
         eprintln!(
-            "{}:\t{}",
-            "Token",
-            format!("{:?}", $token.kind).bright_cyan()
-        );
-        eprintln!(
-            "{}:\t{}{}{}",
-            "Source",
+            "Source:\t{}{}{}",
             err_source_before.yellow(),
             err_source.yellow().underline(),
             err_source_after.yellow()
