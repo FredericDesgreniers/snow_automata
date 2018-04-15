@@ -1,7 +1,11 @@
 #![macro_use]
+
+pub use colored::*;
 macro_rules! syntax_err {
     ($syntax_parser: expr, $err: expr, $token: expr) => {
-        let (token_start, token_end) = $token.index_location;
+        let debug_info = $token.debug_info;
+
+        let (token_start, token_end) = debug_info.index_location;
 
         let source_start = if token_start > 5 { token_start - 5 } else { 0 };
 
@@ -32,9 +36,9 @@ macro_rules! syntax_err {
         eprintln!(
             "At {}: {} and {}: {}\n",
             "line".green(),
-            $token.line_location.0,
+            debug_info.line_location.0,
             "column".green(),
-            $token.column_location.0
+            debug_info.column_location.0
         );
     };
 }

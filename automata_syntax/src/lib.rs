@@ -8,8 +8,7 @@ mod states;
 
 use statements::*;
 use states::*;
-
-use colored::*;
+use errors::*;
 use automata_parser::tokens::*;
 use automata_core::string_interning::InternedString;
 
@@ -35,7 +34,7 @@ impl<'input> SyntaxParser<'input> {
         let mut state_definitions = Vec::new();
 
         while let Some(token) = self.parser.get_next_token() {
-            match token.kind.clone() {
+            match token.kind {
                 TokenKind::Identifier(name) => {
                     let state_definition = self.parse_state_definition(token, name);
                     state_definitions.push(state_definition);
@@ -61,7 +60,7 @@ impl<'input> SyntaxParser<'input> {
             } = open_token
             {
                 while let Some(token) = self.parser.get_next_token() {
-                    match token.kind.clone() {
+                    match token.kind {
                         TokenKind::Scope(ScopeType::Close) => {
                             return current_state_definition;
                         }
@@ -109,7 +108,7 @@ impl<'input> SyntaxParser<'input> {
                             let mut statement_kind = StatementKind::Literal(chr);
 
                             if let Some(next_token) = next_token {
-                                match next_token.kind.clone() {
+                                match next_token.kind {
                                     TokenKind::Range => {
                                         if let Some(token) = self.parser.get_next_token() {
                                             if let Token {
@@ -133,7 +132,7 @@ impl<'input> SyntaxParser<'input> {
                                     _ => {
                                         // Since the token wasn't a range, we assume it's an arrow and set it as so
                                         // If it is not an arrow, that error will be caught below
-                                        arrow_token = Some(next_token.clone());
+                                        arrow_token = Some(next_token);
                                     }
                                 }
                                 if arrow_token == None {

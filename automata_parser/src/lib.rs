@@ -5,7 +5,7 @@ extern crate automata_core;
 
 pub mod tokens;
 
-use tokens::{ScopeType::*, Token, TokenKind::*};
+use tokens::{ScopeType::*, Token, TokenDebugInfo, TokenKind::*};
 use automata::Automata;
 use std::str::Chars;
 use colored::*;
@@ -118,9 +118,11 @@ impl<'input> AutomataParser<'input> {
             ($kind: expr) => {
                 return Some(Token::new(
                     $kind,
-                    self.get_column_location_from(column_start),
-                    self.get_line_location_from(line_start),
-                    self.get_index_location_from(index_start),
+                    TokenDebugInfo::new(
+                        self.get_column_location_from(column_start),
+                        self.get_line_location_from(line_start),
+                        self.get_index_location_from(index_start),
+                    ),
                 ));
             };
         }
