@@ -18,23 +18,23 @@ identifier_state{
 	'A'..'Z' => identifier_state
 	'0'..'9' => identifier_state
 	'_' => identifier_state
-	_ => return
+	_ => return IDENTIFIER
 }
 
 number_state{
     '0'..'9' => number_state
     '.' => float_state
-    _ => return
+    _ => return INTEGER
 }
 
 float_state{
     '0'..'9' => float_state
     'e' => exponential_float_state
-    _ => return
+    _ => return FLOAT
 }
 
 exponential_float_state{
     '0'..'9' => exponential_float_state
-    _ => return
+    _ => return FLOAT
 }
 ```
