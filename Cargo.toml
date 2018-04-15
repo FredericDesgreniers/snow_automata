@@ -1,0 +1,11 @@
+[workspace]
+
+[package]
+name = "snow_automata"
+version = "0.1.0"
+authors = ["Frederic Desgreniers <fredericdesgreniers@gmail.com>"]
+
+[dependencies]
+automata = {path = "automata"}
+automata_parser = {path = "automata_parser"}
+automata_syntax = {path = "automata_syntax"}

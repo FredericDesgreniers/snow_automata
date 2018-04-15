@@ -1,0 +1,8 @@
+[package]
+name = "automata_syntax"
+version = "0.1.0"
+authors = ["Frederic Desgreniers <fredericdesgreniers@gmail.com>"]
+
+[dependencies]
+automata_parser = {path = "../automata_parser"}
+colored = "1.6"
