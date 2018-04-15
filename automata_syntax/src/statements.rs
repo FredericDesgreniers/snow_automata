@@ -6,15 +6,22 @@ pub struct Statement {
     /// The match pattern
     match_kind: StatementMatchKind,
     /// The destination state's name
-    destination: InternedString,
-
-
+    destination: Destination,
 }
 
 impl Statement {
-    pub fn new(destination: InternedString, match_kind: StatementMatchKind) -> Self {
-        Self { destination, match_kind }
+    pub fn new(destination: Destination, match_kind: StatementMatchKind) -> Self {
+        Self {
+            destination,
+            match_kind,
+        }
     }
+}
+
+#[derive(Debug)]
+pub enum Destination {
+    State(InternedString),
+    Return(InternedString),
 }
 
 /// A kind of statement

@@ -25,6 +25,7 @@ dependencies = [
  "automata_core 0.1.0",
  "automata_parser 0.1.0",
  "colored 1.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lazy_static 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
