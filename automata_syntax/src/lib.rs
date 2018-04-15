@@ -1,3 +1,4 @@
+extern crate automata;
 extern crate automata_core;
 extern crate automata_parser;
 extern crate colored;
@@ -6,12 +7,9 @@ extern crate colored;
 extern crate lazy_static;
 
 mod errors;
-mod statements;
-mod states;
 
 use automata_core::string_interning::*;
-use statements::*;
-use states::*;
+use automata::{statements::*, states::*};
 use errors::*;
 use automata_parser::tokens::*;
 use automata_core::string_interning::InternedString;

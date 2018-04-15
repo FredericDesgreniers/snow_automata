@@ -1,6 +1,9 @@
 [[package]]
 name = "automata"
 version = "0.1.0"
+dependencies = [
+ "automata_core 0.1.0",
+]
 
 [[package]]
 name = "automata_core"
@@ -22,6 +25,7 @@ dependencies = [
 name = "automata_syntax"
 version = "0.1.0"
 dependencies = [
+ "automata 0.1.0",
  "automata_core 0.1.0",
  "automata_parser 0.1.0",
  "colored 1.6.0 (registry+https://github.com/rust-lang/crates.io-index)",

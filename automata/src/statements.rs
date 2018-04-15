@@ -4,9 +4,9 @@ use automata_core::string_interning::*;
 #[derive(Debug)]
 pub struct Statement {
     /// The match pattern
-    match_kind: StatementMatchKind,
+    pub match_kind: StatementMatchKind,
     /// The destination state's name
-    destination: Destination,
+    pub destination: Destination,
 }
 
 impl Statement {
@@ -20,7 +20,7 @@ impl Statement {
 }
 
 /// A State Destination
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum Destination {
     State(InternedString),
     Return(InternedString),

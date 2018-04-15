@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["Frederic Desgreniers <fredericdesgreniers@gmail.com>"]
 
 [dependencies]
+automata_core = {path="../automata_core"}

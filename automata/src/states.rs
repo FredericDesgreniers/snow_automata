@@ -5,8 +5,8 @@ use automata_core::string_interning::*;
 /// Contains the name and the contained statements
 #[derive(Debug)]
 pub struct StateDefinition {
-    name: InternedString,
-    statements: Vec<Statement>,
+    pub name: InternedString,
+    pub statements: Vec<Statement>,
 }
 
 impl StateDefinition {

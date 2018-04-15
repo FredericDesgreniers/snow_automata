@@ -3,6 +3,7 @@ extern crate automata_parser;
 extern crate automata_syntax;
 
 use automata_syntax::SyntaxParser;
+use automata::Automata;
 use std::fs::File;
 use std::io::prelude::*;
 
@@ -20,5 +21,7 @@ fn main() {
     let mut parser = SyntaxParser::new(&automata_text);
     let state_definitions = parser.parse();
 
-    println!("{:#?}", state_definitions);
+    let automata = Automata::resolve_from(state_definitions);
+
+    println!("{:#?}", automata);
 }
