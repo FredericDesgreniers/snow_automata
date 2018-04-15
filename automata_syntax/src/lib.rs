@@ -1,5 +1,5 @@
-extern crate automata_parser;
 extern crate automata_core;
+extern crate automata_parser;
 extern crate colored;
 
 mod errors;
@@ -20,13 +20,12 @@ pub struct SyntaxParser<'input> {
     input: &'input str,
 }
 
-
 impl<'input> SyntaxParser<'input> {
     /// Create a new SyntaxParser for some input string
     pub fn new(input: &'input str) -> Self {
         Self {
             parser: automata_parser::AutomataParser::new(input),
-            input
+            input,
         }
     }
 
@@ -40,7 +39,7 @@ impl<'input> SyntaxParser<'input> {
                 TokenKind::Identifier(name) => {
                     let state_definition = self.parse_state_definition(token, name);
                     state_definitions.push(state_definition);
-                },
+                }
                 _ => {
                     syntax_err!(self, "Did not expect at start of definition", token);
                 }
@@ -56,26 +55,42 @@ impl<'input> SyntaxParser<'input> {
 
         let open_token = self.parser.get_next_token();
         if let Some(open_token) = open_token {
-            if let Token{kind: TokenKind::Scope(ScopeType::Open), ..} = open_token {
-
-                'statement_loop: while let Some(token) = self.parser.get_next_token() {
+            if let Token {
+                kind: TokenKind::Scope(ScopeType::Open),
+                ..
+            } = open_token
+            {
+                while let Some(token) = self.parser.get_next_token() {
                     match token.kind.clone() {
-
                         TokenKind::Scope(ScopeType::Close) => {
                             return current_state_definition;
-                            break 'statement_loop;
-                        },
+                        }
                         TokenKind::UnderScore => {
                             let arrow_token = self.parser.get_next_token();
 
                             // The rest of the statement is `=> destination`
                             if let Some(arrow_token) = arrow_token {
-                                if let Token { kind: TokenKind::Arrow, .. } = arrow_token {
+                                if let Token {
+                                    kind: TokenKind::Arrow,
+                                    ..
+                                } = arrow_token
+                                {
                                     let destination = self.parser.get_next_token();
-                                    if let Some(Token { kind: TokenKind::Identifier(destination), .. }) = destination {
-                                        current_state_definition.push_statement(Statement::new(destination, StatementKind::Default));
+                                    if let Some(Token {
+                                        kind: TokenKind::Identifier(destination),
+                                        ..
+                                    }) = destination
+                                    {
+                                        current_state_definition.push_statement(Statement::new(
+                                            destination,
+                                            StatementKind::Default,
+                                        ));
                                     } else {
-                                        syntax_err!(self, "Expected destination identifier after", arrow_token);
+                                        syntax_err!(
+                                            self,
+                                            "Expected destination identifier after",
+                                            arrow_token
+                                        );
                                     }
                                 } else {
                                     syntax_err!(self, "Expected arrow instead of ", arrow_token);
@@ -97,16 +112,24 @@ impl<'input> SyntaxParser<'input> {
                                 match next_token.kind.clone() {
                                     TokenKind::Range => {
                                         if let Some(token) = self.parser.get_next_token() {
-                                            if let Token{kind: TokenKind::Char(end_chr), ..} = token {
+                                            if let Token {
+                                                kind: TokenKind::Char(end_chr),
+                                                ..
+                                            } = token
+                                            {
                                                 // A range token was present between two char literals, so we change the kind to a range
                                                 statement_kind = StatementKind::Range(chr, end_chr);
-                                            }  else {
+                                            } else {
                                                 syntax_err!(self, "Invalid range close", token);
                                             }
                                         } else {
-                                            syntax_err!(self, "Expected range close after", next_token);
+                                            syntax_err!(
+                                                self,
+                                                "Expected range close after",
+                                                next_token
+                                            );
                                         }
-                                    },
+                                    }
                                     _ => {
                                         // Since the token wasn't a range, we assume it's an arrow and set it as so
                                         // If it is not an arrow, that error will be caught below
@@ -117,35 +140,54 @@ impl<'input> SyntaxParser<'input> {
                                     arrow_token = self.parser.get_next_token();
                                 }
 
-
                                 // The rest of the statement is `=> destination`
                                 if let Some(arrow_token) = arrow_token {
-                                    if let Token { kind: TokenKind::Arrow, .. } = arrow_token {
+                                    if let Token {
+                                        kind: TokenKind::Arrow,
+                                        ..
+                                    } = arrow_token
+                                    {
                                         let destination = self.parser.get_next_token();
-                                        if let Some(Token { kind: TokenKind::Identifier(destination), .. }) = destination {
-                                            current_state_definition.push_statement(Statement::new(destination, statement_kind));
+                                        if let Some(Token {
+                                            kind: TokenKind::Identifier(destination),
+                                            ..
+                                        }) = destination
+                                        {
+                                            current_state_definition.push_statement(
+                                                Statement::new(destination, statement_kind),
+                                            );
                                         } else {
-                                            syntax_err!(self, "Expected destination identifier after", arrow_token);
+                                            syntax_err!(
+                                                self,
+                                                "Expected destination identifier after",
+                                                arrow_token
+                                            );
                                         }
                                     } else {
-                                        syntax_err!(self, "Expected arrow instead of ", arrow_token);
+                                        syntax_err!(
+                                            self,
+                                            "Expected arrow instead of ",
+                                            arrow_token
+                                        );
                                     }
                                 } else {
                                     syntax_err!(self, "Expected arrow after", next_token);
                                 }
-
                             } else {
                                 syntax_err!(self, "Expected some token after", token);
                             }
-                        },
+                        }
                         _ => {
                             syntax_err!(self, "Statement cannot start with", token);
                         }
                     }
                 }
-
             } else {
-                syntax_err!(self, format!("Expected an open token after {:?}", token), open_token);
+                syntax_err!(
+                    self,
+                    format!("Expected an open token after {:?}", token),
+                    open_token
+                );
             }
         } else {
             syntax_err!(self, "Expected an open token after", token);

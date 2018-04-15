@@ -1,18 +1,10 @@
-
-pub struct Automata {
-
-}
+pub struct Automata {}
 
 impl Automata {
     pub fn new() -> Self {
-        Self {
-
-        }
+        Self {}
     }
 }
-
-
-
 
 #[cfg(test)]
 mod tests {
