@@ -84,18 +84,18 @@ impl<'input> SyntaxParser<'input> {
                                     ..
                                 } = arrow_token
                                 {
-
                                     if let Some(destination) = self.parse_destination(arrow_token) {
-                                        current_state_definition.push_statement(
-                                            Statement::new(
-                                                destination,
-                                                StatementMatchKind::Default,
-                                            ),
-                                        );
+                                        current_state_definition.push_statement(Statement::new(
+                                            destination,
+                                            StatementMatchKind::Default,
+                                        ));
                                     } else {
-                                        syntax_err!(self, "Could find valid destination after ", arrow_token);
+                                        syntax_err!(
+                                            self,
+                                            "Could find valid destination after ",
+                                            arrow_token
+                                        );
                                     }
-
                                 } else {
                                     syntax_err!(self, "Expected arrow instead of ", arrow_token);
                                 }
@@ -152,17 +152,19 @@ impl<'input> SyntaxParser<'input> {
                                         ..
                                     } = arrow_token
                                     {
-                                        if let Some(destination) = self.parse_destination(arrow_token) {
+                                        if let Some(destination) =
+                                            self.parse_destination(arrow_token)
+                                        {
                                             current_state_definition.push_statement(
-                                                Statement::new(
-                                                    destination,
-                                                    statement_kind,
-                                                ),
+                                                Statement::new(destination, statement_kind),
                                             );
                                         } else {
-                                            syntax_err!(self, "Could find valid destination after ", arrow_token);
+                                            syntax_err!(
+                                                self,
+                                                "Could find valid destination after ",
+                                                arrow_token
+                                            );
                                         }
-
                                     } else {
                                         syntax_err!(
                                             self,
@@ -202,40 +204,30 @@ impl<'input> SyntaxParser<'input> {
                 kind: TokenKind::Identifier(destination),
                 ..
             } = destination_token
-                {
-                    if destination == *KEYWORD_RETURN {
-                        if let Some(return_identifier_token) =
-                        self.parser.get_next_token()
-                            {
-                                if let Token {
-                                    kind: TokenKind::Identifier(return_identifier),
-                                    ..
-                                } = return_identifier_token
-                                    {
-                                        return Some(Destination::Return(return_identifier));
-                                    } else {
-                                    syntax_err!(
-                                                        self,
-                                                        "Expected identifier after return",
-                                                        return_identifier_token
-                                                    );
-                                }
-                            } else {
+            {
+                if destination == *KEYWORD_RETURN {
+                    if let Some(return_identifier_token) = self.parser.get_next_token() {
+                        if let Token {
+                            kind: TokenKind::Identifier(return_identifier),
+                            ..
+                        } = return_identifier_token
+                        {
+                            return Some(Destination::Return(return_identifier));
+                        } else {
                             syntax_err!(
-                                                    self,
-                                                    "Expected identifier after return",
-                                                    destination_token
-                                                );
+                                self,
+                                "Expected identifier after return",
+                                return_identifier_token
+                            );
                         }
                     } else {
-                        return Some(Destination::State(destination));
+                        syntax_err!(self, "Expected identifier after return", destination_token);
                     }
                 } else {
-                syntax_err!(
-                                            self,
-                                            "Expected destination identifier",
-                                            destination_token
-                                        );
+                    return Some(Destination::State(destination));
+                }
+            } else {
+                syntax_err!(self, "Expected destination identifier", destination_token);
             }
         } else {
             syntax_err!(self, "Expected destination identifier after", token);

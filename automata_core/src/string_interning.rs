@@ -36,7 +36,6 @@ impl fmt::Debug for InternedString {
         } else {
             write!(f, "Invalid intern string {:?}", *self)
         }
-
     }
 }
 
