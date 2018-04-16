@@ -2,13 +2,11 @@ start{
     'a'..'z' => identifier_state
     'A'..'Z' => identifier_state
     '0'..'9' => number_state
-    '=' => arrow_stage_state
+    "=>" => return ARROW
+    "Self" => KEYWORD_SELF
+    "return" => KEYWORD_RETURN
     '{' => return BRACKET_OPEN
     '}' => return BRACKET_CLOSE
-}
-
-arrow_stage_state{
-    '>' => return ARROW
 }
 
 identifier_state{

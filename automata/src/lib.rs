@@ -9,7 +9,6 @@ pub mod statements;
 pub mod states;
 pub mod machine;
 
-
 use machine::*;
 use states::*;
 use statements::*;
@@ -25,7 +24,7 @@ lazy_static! {
 /// A state machine
 #[derive(Debug)]
 pub struct Automata {
-    state_table: HashMap<InternedString, TransitionTable>
+    state_table: HashMap<InternedString, TransitionTable>,
 }
 
 impl Automata {
@@ -48,11 +47,9 @@ impl Automata {
                 match statement.match_kind {
                     StatementMatchKind::Default => {
                         transition_table.set_default_transition(destination);
-                    },
-                    StatementMatchKind::Range(range) => {
-                        for chr in range {
-                            transition_table.add_destination(chr, destination);
-                        }
+                    }
+                    StatementMatchKind::Range(range) => for chr in range {
+                        transition_table.add_destination(chr, destination);
                     },
                     StatementMatchKind::Literal(chr) => {
                         transition_table.add_destination(chr, destination);
@@ -63,8 +60,6 @@ impl Automata {
             state_table.insert(definition.name, transition_table);
         }
 
-        return Automata {
-            state_table
-        }
+        return Automata { state_table };
     }
 }

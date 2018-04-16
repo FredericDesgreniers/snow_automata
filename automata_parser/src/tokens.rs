@@ -1,17 +1,18 @@
 use automata_core::string_interning::*;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Token {
     pub kind: TokenKind,
     pub debug_info: TokenDebugInfo,
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TokenKind {
     Identifier(InternedString),
     Arrow,
     Column,
     Char(char),
+    CharSequence(Vec<char>),
     Range,
     SemiColumn,
     Integer(i32),

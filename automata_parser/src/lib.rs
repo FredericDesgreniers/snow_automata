@@ -240,6 +240,24 @@ impl<'input> AutomataParser<'input> {
             '_' => {
                 return_token!(UnderScore);
             }
+            '"' => {
+                let mut sequence = Vec::new();
+                let mut escaped = false;
+
+                while let Some(chr) = self.get_next_char() {
+                    match chr {
+                        '\\' => {
+                            escaped = true;
+                        }
+                        '"' if !escaped => {
+                            return_token!(CharSequence(sequence));
+                        }
+                        chr => {
+                            sequence.push(chr);
+                        }
+                    }
+                }
+            }
             // Unknown
             chr => {
                 parse_err!(format!("No pattern for {} for ", chr));
