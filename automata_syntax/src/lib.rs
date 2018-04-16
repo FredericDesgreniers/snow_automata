@@ -118,6 +118,8 @@ impl<'input> SyntaxParser<'input> {
 
                                             let mut intermediate_states: Vec<StateDefinition> = Vec::new();
 
+                                            let sequence_as_str = sequence.iter().collect::<String>();
+
                                             'sequence: for i in 0..sequence.len() {
                                                 let input = sequence[i];
 
@@ -130,7 +132,7 @@ impl<'input> SyntaxParser<'input> {
                                                     }
                                                 };
 
-                                                let intermediate_state_name = intern(format!("{}_to_{}_intermediate_{}", intern_get_str(name).unwrap(), destination_name, i));
+                                                let intermediate_state_name = intern(format!("{}_to_{}_intermediate_{}_for_{}", intern_get_str(name).unwrap(), destination_name, i, sequence_as_str));
 
                                                 match i {
                                                     0 => {
