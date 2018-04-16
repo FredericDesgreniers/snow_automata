@@ -40,7 +40,7 @@ impl<'input> SyntaxParser<'input> {
     /// Parses the SyntaxParser's input
     /// Returns a Vec of StateDefinition's
     pub fn parse(&mut self) -> Vec<StateDefinition> {
-        let mut state_definitions : Vec<StateDefinition> = Vec::new();
+        let mut state_definitions: Vec<StateDefinition> = Vec::new();
 
         while let Some(token) = self.parser.get_next_token() {
             match token.kind {
@@ -58,7 +58,11 @@ impl<'input> SyntaxParser<'input> {
     }
 
     /// Parse a StateDefinition given a token and a name
-    fn parse_state_definition(&mut self, token: Token, name: InternedString) -> Vec<StateDefinition> {
+    fn parse_state_definition(
+        &mut self,
+        token: Token,
+        name: InternedString,
+    ) -> Vec<StateDefinition> {
         let mut current_state_definition = StateDefinition::new(name);
         let mut result = Vec::new();
 
@@ -85,7 +89,8 @@ impl<'input> SyntaxParser<'input> {
                                     ..
                                 } = arrow_token
                                 {
-                                    if let Some(destination) = self.parse_destination(&arrow_token) {
+                                    if let Some(destination) = self.parse_destination(&arrow_token)
+                                    {
                                         current_state_definition.push_statement(Statement::new(
                                             destination,
                                             StatementMatchKind::Default,
@@ -113,65 +118,77 @@ impl<'input> SyntaxParser<'input> {
                                     kind: TokenKind::Arrow,
                                     ..
                                 } = arrow_token
+                                {
+                                    if let Some(destination) = self.parse_destination(&arrow_token)
                                     {
-                                        if let Some(destination) = self.parse_destination(&arrow_token) {
+                                        let mut intermediate_states: Vec<StateDefinition> = Vec::new();
 
-                                            let mut intermediate_states: Vec<StateDefinition> = Vec::new();
+                                        let sequence_as_str = sequence.iter().collect::<String>();
 
-                                            let sequence_as_str = sequence.iter().collect::<String>();
+                                        'sequence: for i in 0..sequence.len() {
+                                            let input = sequence[i];
 
-                                            'sequence: for i in 0..sequence.len() {
-                                                let input = sequence[i];
+                                            let destination_name = match destination {
+                                                Destination::State(interned_string) => format!(
+                                                    "{}",
+                                                    intern_get_str(interned_string).unwrap()
+                                                ),
+                                                Destination::Return(interned_string) => format!(
+                                                    "return_{}",
+                                                    intern_get_str(interned_string).unwrap()
+                                                ),
+                                            };
 
-												let destination_name = match destination {
-                                                    Destination::State(interned_string) => {
-                                                        format!("{}", intern_get_str(interned_string).unwrap())
-                                                    }
-                                                    Destination::Return(interned_string) => {
-                                                        format!("return_{}", intern_get_str(interned_string).unwrap())
-                                                    }
-                                                };
+                                            let intermediate_state_name = intern(format!(
+                                                "{}_to_{}_intermediate_{}_for_{}",
+                                                intern_get_str(name).unwrap(),
+                                                destination_name,
+                                                i,
+                                                sequence_as_str
+                                            ));
 
-                                                let intermediate_state_name = intern(format!("{}_to_{}_intermediate_{}_for_{}", intern_get_str(name).unwrap(), destination_name, i, sequence_as_str));
-
-                                                match i {
-                                                    0 => {
-                                                        current_state_definition.push_statement(Statement::new(
-                                                            Destination::State(intermediate_state_name),
+                                            match i {
+                                                0 => {
+                                                    current_state_definition.push_statement(
+                                                        Statement::new(
+                                                            Destination::State(
+                                                                intermediate_state_name,
+                                                            ),
                                                             StatementMatchKind::Literal(input),
-                                                        ));
-                                                    }
-                                                    _ if i == sequence.len()-1 => {
-                                                        intermediate_states[i-1].push_statement(Statement::new(
-                                                            destination,
-                                                            StatementMatchKind::Literal(input)
-                                                        ));
-                                                        break 'sequence;
-                                                    }
-                                                    _ => {
-                                                        intermediate_states[i-1].push_statement(Statement::new(
-                                                            Destination::State(intermediate_state_name),
-                                                            StatementMatchKind::Literal(input)
-                                                        ))
-                                                    }
+                                                        ),
+                                                    );
                                                 }
-
-
-                                                let intermediate_state = StateDefinition::new(intermediate_state_name);
-                                                intermediate_states.push(intermediate_state);
+                                                _ if i == sequence.len() - 1 => {
+                                                    intermediate_states[i - 1].push_statement(
+                                                        Statement::new(
+                                                            destination,
+                                                            StatementMatchKind::Literal(input),
+                                                        ),
+                                                    );
+                                                    break 'sequence;
+                                                }
+                                                _ => intermediate_states[i - 1].push_statement(
+                                                    Statement::new(
+                                                        Destination::State(intermediate_state_name),
+                                                        StatementMatchKind::Literal(input),
+                                                    ),
+                                                ),
                                             }
 
-                                            result.append(&mut intermediate_states);
-
-
-                                        } else {
-                                            syntax_err(
-                                                self,
-                                                "Could find valid destination after ",
-                                                &arrow_token,
-                                            );
+                                            let intermediate_state =
+                                                StateDefinition::new(intermediate_state_name);
+                                            intermediate_states.push(intermediate_state);
                                         }
+
+                                        result.append(&mut intermediate_states);
                                     } else {
+                                        syntax_err(
+                                            self,
+                                            "Could find valid destination after ",
+                                            &arrow_token,
+                                        );
+                                    }
+                                } else {
                                     syntax_err(self, "Expected arrow instead of ", &arrow_token);
                                 }
                             } else {
