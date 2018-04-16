@@ -12,8 +12,8 @@ start{
     'A'..'Z' => identifier_state
     '0'..'9' => number_state
     "=>" => return ARROW
-    "Self" => KEYWORD_SELF
-    "return" => KEYWORD_RETURN
+    "Self" =>  return KEYWORD_SELF
+    "return" => return KEYWORD_RETURN
     '{' => return BRACKET_OPEN
     '}' => return BRACKET_CLOSE
 }
