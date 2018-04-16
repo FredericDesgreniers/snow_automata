@@ -73,7 +73,6 @@ impl<'input> SyntaxParser<'input> {
                 ..
             } = open_token
             {
-
                 'statements: loop {
                     let (match_statements, next_token) = self.parse_left_side_inputs();
                     if match_statements.is_empty() {
@@ -95,7 +94,7 @@ impl<'input> SyntaxParser<'input> {
                     if let Some(next_token) = next_token {
                         match next_token.kind.clone() {
                             TokenKind::Arrow => {
-                                if let Some(destination ) = self.parse_destination(&next_token) {
+                                if let Some(destination) = self.parse_destination(&next_token) {
                                     match_statements.into_iter().for_each(|match_statement| {
                                         current_state_definition.push_statement(Statement::new(
                                             destination,
@@ -109,14 +108,17 @@ impl<'input> SyntaxParser<'input> {
                                         &next_token,
                                     );
                                 }
-
                             }
                             _ => {
                                 syntax_err(self, "Expected '=>' here", &next_token);
                             }
                         }
                     } else {
-                        syntax_err(self, "A token is missing after a match declaration", &open_token);
+                        syntax_err(
+                            self,
+                            "A token is missing after a match declaration",
+                            &open_token,
+                        );
                     }
                 }
             } else {
@@ -168,7 +170,9 @@ impl<'input> SyntaxParser<'input> {
                         syntax_err(self, "Cannot apply range on multiple literals", &token);
                     }
 
-                    if let Some(range_open) = buffered_match_kinds.get(buffered_match_kinds.len() - 1) {
+                    if let Some(range_open) =
+                        buffered_match_kinds.get(buffered_match_kinds.len() - 1)
+                    {
                         match range_open {
                             StatementMatchKind::Literal(range_open) => {
                                 if let Some(range_close) = self.parser.get_next_token() {
@@ -176,10 +180,15 @@ impl<'input> SyntaxParser<'input> {
                                         TokenKind::Char(range_close) => {
                                             let range = CharRange::new(*range_open, range_close);
                                             let _ = buffered_match_kinds.pop();
-                                            buffered_match_kinds.push(StatementMatchKind::Range(range));
+                                            buffered_match_kinds
+                                                .push(StatementMatchKind::Range(range));
                                         }
                                         _ => {
-                                            syntax_err(self, "Cannot close range with", &range_close);
+                                            syntax_err(
+                                                self,
+                                                "Cannot close range with",
+                                                &range_close,
+                                            );
                                         }
                                     }
                                 } else {
@@ -187,19 +196,20 @@ impl<'input> SyntaxParser<'input> {
                                 }
                             }
                             _ => {
-                                syntax_err(self, "Only char literals cvan be range open before", &token);
+                                syntax_err(
+                                    self,
+                                    "Only char literals cvan be range open before",
+                                    &token,
+                                );
                             }
                         }
-
                     } else {
                         syntax_err(self, "Range needs opening literal", &token);
                     }
-
-
-                },
+                }
                 TokenKind::Line => {
                     result.append(&mut buffered_match_kinds);
-                },
+                }
                 _ => {
                     return (result, Some(token));
                 }
