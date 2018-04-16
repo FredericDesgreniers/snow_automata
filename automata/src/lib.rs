@@ -2,15 +2,25 @@
 
 extern crate automata_core;
 
+#[macro_use]
+extern crate lazy_static;
+
 pub mod statements;
 pub mod states;
 pub mod machine;
+
 
 use machine::*;
 use states::*;
 use statements::*;
 use automata_core::string_interning::*;
 use std::collections::HashMap;
+
+lazy_static! {
+    static ref KEYWORD_SELF: InternedString = {
+        return intern("Self");
+    };
+}
 
 #[derive(Debug)]
 pub struct Automata {
@@ -25,7 +35,13 @@ impl Automata {
             let mut transition_table = TransitionTable::new();
 
             for statement in definition.statements {
-                let destination = statement.destination;
+                let mut destination = statement.destination;
+
+                if let Destination::State(destination_identifier) = destination {
+                    if destination_identifier == *KEYWORD_SELF {
+                        destination = Destination::State(definition.name);
+                    }
+                }
 
                 match statement.match_kind {
                     StatementMatchKind::Default => {
@@ -33,11 +49,11 @@ impl Automata {
                     },
                     StatementMatchKind::Range(range) => {
                         for chr in range {
-                            transition_table.add_transition(chr, destination);
+                            transition_table.add_destination(chr, destination);
                         }
                     },
                     StatementMatchKind::Literal(chr) => {
-                        transition_table.add_transition(chr, destination);
+                        transition_table.add_destination(chr, destination);
                     }
                 }
             }
