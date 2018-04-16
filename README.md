@@ -8,13 +8,13 @@ A minimal example of what the state machine definition looks like:
 
 ```
 start{
-    'a'..'z' | _ => identifier_state
+    'a'..'z' | '_' => identifier_state
     '0'..'9' => number_state
     "Self" =>  return KEYWORD_SELF
 }
 
 identifier_state{
-    'a'..'z' | '0'..'9' | _  => Self
+    'a'..'z' | '0'..'9' | '_'  => Self
     _ => return IDENTIFIER
 }
 
