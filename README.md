@@ -8,38 +8,25 @@ A minimal example of what the state machine definition looks like:
 
 ```
 start{
-    'a'..'z' => identifier_state
-    'A'..'Z' => identifier_state
+    'a'..'z' | _ => identifier_state
     '0'..'9' => number_state
-    "=>" => return ARROW
     "Self" =>  return KEYWORD_SELF
-    "return" => return KEYWORD_RETURN
-    '{' => return BRACKET_OPEN
-    '}' => return BRACKET_CLOSE
 }
 
 identifier_state{
-    'a'..'z' => Self
-    'A'..'Z' => Self
-    '0'..'9' => Self
-    '_' => Self
+    'a'..'z' | '0'..'9' | _  => Self
     _ => return IDENTIFIER
 }
 
 number_state{
     '0'..'9' => Self
     '.' => float_state
-    _ => return INTEGER
+    _ => return NUMBER
 }
 
 float_state{
     '0'..'9' => Self
-    'e' => exponential_float_state
     _ => return FLOAT
 }
 
-exponential_float_state{
-    '0'..'9' => Self
-    _ => return FLOAT
-}
 ```

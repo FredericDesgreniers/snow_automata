@@ -17,6 +17,7 @@ pub enum TokenKind {
     SemiColumn,
     Integer(i32),
     Scope(ScopeType),
+    Line,
     UnderScore,
 }
 

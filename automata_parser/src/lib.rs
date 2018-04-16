@@ -240,6 +240,9 @@ impl<'input> AutomataParser<'input> {
             '_' => {
                 return_token!(UnderScore);
             }
+            '|' => {
+                return_token!(Line);
+            }
             '"' => {
                 let mut sequence = Vec::new();
                 let mut escaped = false;

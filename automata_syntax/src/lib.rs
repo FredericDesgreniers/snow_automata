@@ -73,208 +73,50 @@ impl<'input> SyntaxParser<'input> {
                 ..
             } = open_token
             {
-                while let Some(token) = self.parser.get_next_token() {
-                    match token.kind.clone() {
-                        TokenKind::Scope(ScopeType::Close) => {
-                            result.push(current_state_definition);
-                            return result;
-                        }
-                        TokenKind::UnderScore => {
-                            let arrow_token = self.parser.get_next_token();
 
-                            // The rest of the statement is `=> destination`
-                            if let Some(arrow_token) = arrow_token {
-                                if let Token {
-                                    kind: TokenKind::Arrow,
-                                    ..
-                                } = arrow_token
-                                {
-                                    if let Some(destination) = self.parse_destination(&arrow_token)
-                                    {
+                'statements: loop {
+                    let (match_statements, next_token) = self.parse_left_side_inputs();
+                    if match_statements.is_empty() {
+                        if let Some(next_token) = next_token {
+                            match next_token.kind.clone() {
+                                TokenKind::Scope(ScopeType::Close) => {
+                                    // This is ok, but we don't do anything since we want to break even on error
+                                }
+                                _ => {
+                                    syntax_err(self, "State did not close", &next_token);
+                                }
+                            }
+                        } else {
+                            syntax_err(self, "State has no closing token", &open_token);
+                        }
+                        break 'statements;
+                    }
+
+                    if let Some(next_token) = next_token {
+                        match next_token.kind.clone() {
+                            TokenKind::Arrow => {
+                                if let Some(destination ) = self.parse_destination(&next_token) {
+                                    match_statements.into_iter().for_each(|match_statement| {
                                         current_state_definition.push_statement(Statement::new(
                                             destination,
-                                            StatementMatchKind::Default,
+                                            match_statement,
                                         ));
-                                    } else {
-                                        syntax_err(
-                                            self,
-                                            "Could find valid destination after ",
-                                            &arrow_token,
-                                        );
-                                    }
+                                    })
                                 } else {
-                                    syntax_err(self, "Expected arrow instead of ", &arrow_token);
+                                    syntax_err(
+                                        self,
+                                        "Could find valid destination after ",
+                                        &next_token,
+                                    );
                                 }
-                            } else {
-                                syntax_err(self, "Expected arrow after", &token);
+
+                            }
+                            _ => {
+                                syntax_err(self, "Expected '=>' here", &next_token);
                             }
                         }
-                        TokenKind::CharSequence(sequence) => {
-                            let arrow_token = self.parser.get_next_token();
-
-                            // The rest of the statement is `=> destination`
-                            if let Some(arrow_token) = arrow_token {
-                                if let Token {
-                                    kind: TokenKind::Arrow,
-                                    ..
-                                } = arrow_token
-                                {
-                                    if let Some(destination) = self.parse_destination(&arrow_token)
-                                    {
-                                        let mut intermediate_states: Vec<StateDefinition> = Vec::new();
-
-                                        let sequence_as_str = sequence.iter().collect::<String>();
-
-                                        'sequence: for i in 0..sequence.len() {
-                                            let input = sequence[i];
-
-                                            let destination_name = match destination {
-                                                Destination::State(interned_string) => format!(
-                                                    "{}",
-                                                    intern_get_str(interned_string).unwrap()
-                                                ),
-                                                Destination::Return(interned_string) => format!(
-                                                    "return_{}",
-                                                    intern_get_str(interned_string).unwrap()
-                                                ),
-                                            };
-
-                                            let intermediate_state_name = intern(format!(
-                                                "{}_to_{}_intermediate_{}_for_{}",
-                                                intern_get_str(name).unwrap(),
-                                                destination_name,
-                                                i,
-                                                sequence_as_str
-                                            ));
-
-                                            match i {
-                                                0 => {
-                                                    current_state_definition.push_statement(
-                                                        Statement::new(
-                                                            Destination::State(
-                                                                intermediate_state_name,
-                                                            ),
-                                                            StatementMatchKind::Literal(input),
-                                                        ),
-                                                    );
-                                                }
-                                                _ if i == sequence.len() - 1 => {
-                                                    intermediate_states[i - 1].push_statement(
-                                                        Statement::new(
-                                                            destination,
-                                                            StatementMatchKind::Literal(input),
-                                                        ),
-                                                    );
-                                                    break 'sequence;
-                                                }
-                                                _ => intermediate_states[i - 1].push_statement(
-                                                    Statement::new(
-                                                        Destination::State(intermediate_state_name),
-                                                        StatementMatchKind::Literal(input),
-                                                    ),
-                                                ),
-                                            }
-
-                                            let intermediate_state =
-                                                StateDefinition::new(intermediate_state_name);
-                                            intermediate_states.push(intermediate_state);
-                                        }
-
-                                        result.append(&mut intermediate_states);
-                                    } else {
-                                        syntax_err(
-                                            self,
-                                            "Could find valid destination after ",
-                                            &arrow_token,
-                                        );
-                                    }
-                                } else {
-                                    syntax_err(self, "Expected arrow instead of ", &arrow_token);
-                                }
-                            } else {
-                                syntax_err(self, "Expected arrow after", &token);
-                            }
-                        }
-                        // it's currently assumed every statement starts with a char literal since it's the only thing supported
-                        TokenKind::Char(chr) => {
-                            let next_token = self.parser.get_next_token();
-
-                            let mut arrow_token = None;
-
-                            // It's assumed this is a literal but if a range is present, it can be changed later
-                            let mut statement_kind = StatementMatchKind::Literal(chr);
-
-                            if let Some(next_token) = next_token {
-                                match next_token.kind {
-                                    TokenKind::Range => {
-                                        if let Some(token) = self.parser.get_next_token() {
-                                            if let Token {
-                                                kind: TokenKind::Char(to_chr),
-                                                ..
-                                            } = token
-                                            {
-                                                // A range token was present between two char literals, so we change the kind to a range
-                                                statement_kind = StatementMatchKind::Range(
-                                                    CharRange::new(chr, to_chr),
-                                                );
-                                            } else {
-                                                syntax_err(self, "Invalid range close", &token);
-                                            }
-                                        } else {
-                                            syntax_err(
-                                                self,
-                                                "Expected range close after",
-                                                &next_token,
-                                            );
-                                        }
-                                    }
-                                    _ => {
-                                        // Since the token wasn't a range, we assume it's an arrow and set it as so
-                                        // If it is not an arrow, that error will be caught below
-                                        arrow_token = Some(next_token.clone());
-                                    }
-                                }
-                                if arrow_token == None {
-                                    arrow_token = self.parser.get_next_token();
-                                }
-
-                                // The rest of the statement is `=> destination`
-                                if let Some(arrow_token) = arrow_token {
-                                    if let Token {
-                                        kind: TokenKind::Arrow,
-                                        ..
-                                    } = arrow_token
-                                    {
-                                        if let Some(destination) =
-                                            self.parse_destination(&arrow_token)
-                                        {
-                                            current_state_definition.push_statement(
-                                                Statement::new(destination, statement_kind),
-                                            );
-                                        } else {
-                                            syntax_err(
-                                                self,
-                                                "Could find valid destination after ",
-                                                &arrow_token,
-                                            );
-                                        }
-                                    } else {
-                                        syntax_err(
-                                            self,
-                                            "Expected arrow instead of ",
-                                            &arrow_token,
-                                        );
-                                    }
-                                } else {
-                                    syntax_err(self, "Expected arrow after", &next_token);
-                                }
-                            } else {
-                                syntax_err(self, "Expected some token after", &token);
-                            }
-                        }
-                        _ => {
-                            syntax_err(self, "Statement cannot start with", &token);
-                        }
+                    } else {
+                        syntax_err(self, "A token is missing after a match declaration", &open_token);
                     }
                 }
             } else {
@@ -290,6 +132,81 @@ impl<'input> SyntaxParser<'input> {
 
         result.push(current_state_definition);
         return result;
+    }
+
+    fn parse_left_side_inputs(&mut self) -> (Vec<StatementMatchKind>, Option<Token>) {
+        let mut result = Vec::new();
+
+        let mut buffered_match_kinds = Vec::new();
+
+        'input_loop: while let Some(token) = self.parser.get_next_token() {
+            match token.kind.clone() {
+                TokenKind::Arrow => {
+                    result.append(&mut buffered_match_kinds);
+                    return (result, Some(token));
+                }
+                TokenKind::UnderScore => {
+                    if !buffered_match_kinds.is_empty() {
+                        syntax_err(self, "| required between match kinds", &token);
+                    }
+                    buffered_match_kinds.push(StatementMatchKind::Default);
+                }
+                TokenKind::Char(chr) => {
+                    if !buffered_match_kinds.is_empty() {
+                        syntax_err(self, "| required between match kinds", &token);
+                    }
+                    buffered_match_kinds.push(StatementMatchKind::Literal(chr));
+                }
+                TokenKind::CharSequence(sequence) => {
+                    if !buffered_match_kinds.is_empty() {
+                        syntax_err(self, "| required between match kinds", &token);
+                    }
+                    buffered_match_kinds.push(StatementMatchKind::Sequence(sequence));
+                }
+                TokenKind::Range => {
+                    if buffered_match_kinds.len() > 1 {
+                        syntax_err(self, "Cannot apply range on multiple literals", &token);
+                    }
+
+                    if let Some(range_open) = buffered_match_kinds.get(buffered_match_kinds.len() - 1) {
+                        match range_open {
+                            StatementMatchKind::Literal(range_open) => {
+                                if let Some(range_close) = self.parser.get_next_token() {
+                                    match range_close.kind.clone() {
+                                        TokenKind::Char(range_close) => {
+                                            let range = CharRange::new(*range_open, range_close);
+                                            let _ = buffered_match_kinds.pop();
+                                            buffered_match_kinds.push(StatementMatchKind::Range(range));
+                                        }
+                                        _ => {
+                                            syntax_err(self, "Cannot close range with", &range_close);
+                                        }
+                                    }
+                                } else {
+                                    syntax_err(self, "Expected range close after", &token);
+                                }
+                            }
+                            _ => {
+                                syntax_err(self, "Only char literals cvan be range open before", &token);
+                            }
+                        }
+
+                    } else {
+                        syntax_err(self, "Range needs opening literal", &token);
+                    }
+
+
+                },
+                TokenKind::Line => {
+                    result.append(&mut buffered_match_kinds);
+                },
+                _ => {
+                    return (result, Some(token));
+                }
+            }
+        }
+
+        return (result, None);
     }
 
     fn parse_destination(&mut self, token: &Token) -> Option<Destination> {
