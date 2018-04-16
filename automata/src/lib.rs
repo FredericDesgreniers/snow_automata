@@ -22,12 +22,14 @@ lazy_static! {
     };
 }
 
+/// A state machine
 #[derive(Debug)]
 pub struct Automata {
     state_table: HashMap<InternedString, TransitionTable>
 }
 
 impl Automata {
+    /// Create an automata from a series of state definitions
     pub fn resolve_from(state_definitions: Vec<StateDefinition>) -> Self {
         let mut state_table = HashMap::new();
 
