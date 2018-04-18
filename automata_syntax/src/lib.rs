@@ -19,6 +19,9 @@ lazy_static! {
     static ref KEYWORD_RETURN: InternedString = {
         return intern("return");
     };
+    static ref KEYWORD_STATE: InternedString = {
+        return intern("state");
+    };
 }
 
 /// Parses the syntax of some input
@@ -43,10 +46,14 @@ impl<'input> SyntaxParser<'input> {
         let mut state_definitions: Vec<StateDefinition> = Vec::new();
 
         while let Some(token) = self.parser.get_next_token() {
-            match token.kind {
+            match token.kind.clone() {
                 TokenKind::Identifier(name) => {
-                    let mut state_definition = self.parse_state_definition(token, name);
-                    state_definitions.append(&mut state_definition);
+                    if name == *KEYWORD_STATE {
+                        let mut state_definition = self.parse_state_definition(token);
+                        state_definitions.append(&mut state_definition);
+                    } else {
+                        syntax_err(self, "Could not start a definition with", &token)
+                    }
                 }
                 _ => {
                     syntax_err(self, "Did not expect at start of definition", &token);
@@ -61,8 +68,22 @@ impl<'input> SyntaxParser<'input> {
     fn parse_state_definition(
         &mut self,
         token: Token,
-        name: InternedString,
     ) -> Vec<StateDefinition> {
+
+        let name = if let Some(token) = self.parser.get_next_token() {
+            match token.kind {
+                TokenKind::Identifier(identifier) => {
+                    identifier
+                }
+                _ => {
+                    intern("")
+                }
+            }
+        } else {
+            syntax_err(self, "Expected a state name after", &token);
+            intern("no name provided")
+        };
+
         let mut current_state_definition = StateDefinition::new(name);
         let mut result = Vec::new();
 

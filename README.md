@@ -7,26 +7,25 @@ The goal of this project is to make several backends that compile the state mach
 A minimal example of what the state machine definition looks like: 
 
 ```
-start{
-    'a'..'z' | '_' => identifier_state
-    '0'..'9' => number_state
+state start {
+    'a'..'z' | '_' => identifier
+    '0'..'9' => number
     "Self" =>  return KEYWORD_SELF
 }
 
-identifier_state{
+state identifier {
     'a'..'z' | '0'..'9' | '_'  => Self
     _ => return IDENTIFIER
 }
 
-number_state{
+state number {
     '0'..'9' => Self
-    '.' => float_state
+    '.' => float
     _ => return NUMBER
 }
 
-float_state{
+state state {
     '0'..'9' => Self
     _ => return FLOAT
 }
-
 ```
